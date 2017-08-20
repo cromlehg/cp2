@@ -292,7 +292,7 @@ contract StagedCrowdsale is Ownable {
   using SafeMath for uint;
 
   struct Stage {
-    uint8 period;
+    uint period;
     uint hardCap;
     uint price;
     uint invested;
@@ -309,11 +309,15 @@ contract StagedCrowdsale is Ownable {
 
   Stage[] public stages;
 
+  function stagesCount() constant returns(uint) {
+    return stages.length;
+  }
+
   function setStart(uint newStart) onlyOwner {
     start = newStart;
   }
 
-  function addStage(uint8 period, uint hardCap, uint price) onlyOwner {
+  function addStage(uint period, uint hardCap, uint price) onlyOwner {
     require(period>0 && hardCap >0 && price > 0);
     stages.push(Stage(period, hardCap, price, 0, 0));
     totalPeriod = totalPeriod.add(period);
@@ -321,26 +325,27 @@ contract StagedCrowdsale is Ownable {
   }
 
   function removeStage(uint8 number) onlyOwner {
-    require(number < stages.length);
+    require(number >=0 && number < stages.length);
 
     Stage storage stage = stages[number];
     totalHardCap = totalHardCap.sub(stage.hardCap);    
     totalPeriod = totalPeriod.sub(stage.period);
- 
-    for (uint i = number; i < stages.length; i++) {
+
+    delete stages[number];
+
+    for (uint i = number; i < stages.length - 1; i++) {
       stages[i] = stages[i+1];
     }
 
-    delete stages[stages.length - 1];
     stages.length--;
   }
 
-  function changeStage(uint8 number, uint8 period,  uint hardCap, uint price) onlyOwner {
-    require(number < stages.length);
+  function changeStage(uint8 number, uint period, uint hardCap, uint price) onlyOwner {
+    require(number >= 0 &&number < stages.length);
 
     Stage storage stage = stages[number];
     totalHardCap = totalHardCap.sub(stage.hardCap);    
-    totalPeriod = totalPeriod.sub(stage.period);
+    totalPeriod = totalPeriod.sub(stage.period);    
 
     stage.hardCap = hardCap;
     stage.period = period;
@@ -350,15 +355,16 @@ contract StagedCrowdsale is Ownable {
     totalPeriod = totalPeriod.add(period);    
   }
 
-  function insertStage(uint8 numberAfter, uint8 period,  uint hardCap, uint price) onlyOwner {
+  function insertStage(uint8 numberAfter, uint period, uint hardCap, uint price) onlyOwner {
     require(numberAfter < stages.length);
 
-    totalHardCap = totalHardCap.add(hardCap);    
-    totalPeriod = totalPeriod.add(period);    
+
+    totalPeriod = totalPeriod.add(period);
+    totalHardCap = totalHardCap.add(hardCap);
 
     stages.length++;
 
-    for (uint i = stages.length - 1; i > numberAfter; i++) {
+    for (uint i = stages.length - 2; i > numberAfter; i--) {
       stages[i + 1] = stages[i];
     }
 
@@ -369,6 +375,9 @@ contract StagedCrowdsale is Ownable {
     for (uint i = 0; i < stages.length; i++) {
       delete stages[i];
     }
+    stages.length -= stages.length;
+    totalPeriod = 0;
+    totalHardCap = 0;
   }
 
   modifier saleIsOn() {
