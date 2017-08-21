@@ -1,9 +1,37 @@
-var Crowdsale = artifacts.require("./Crowdsale.sol");
+var Crowdsale = artifacts.require("Crowdsale");
+var FidcomToken = artifacts.require("FidcomToken");
+var BigNumber = require('bignumber.js');
 
 contract('Crowdsale', function(accounts) {
  
   //============= first owner, function calls from not owner ====================//
 
+
+  var newPeriod1 = 7;
+  var newHardcap1 = 850000000000000000000;
+  var newPrice1 = 1700000000000000;
+
+  var newPeriod2 = 7;
+  var newHardcap2 = 2550000000000000000000;
+  var newPrice2 = 2550000000000000;
+
+  var newPeriod3 = 7;
+  var newHardcap3 = 8160000000000000000000;
+  var newPrice3 = 2720000000000000;
+
+  var newPeriod4 = 21;
+  var newHardcap4 = 49300000000000000000000;
+  var newPrice4 = 3400000000000000;
+
+  var newPeriod5 = 41;
+  var newHardcap5 = 59300000000000000000000;
+  var newPrice5 = 7400000000000000;
+
+  var newPeriod5c = 413;
+  var newHardcap5c = 59300000000000000000012;
+  var newPrice5c = 7400000000009999;
+
+/*
   it("first owner: should not change ownership", function() {
     var meta;
     return Crowdsale.deployed().then(function(instance) {
@@ -263,31 +291,6 @@ contract('Crowdsale', function(accounts) {
     });
   });
 
-  var newPeriod1 = 7;
-  var newHardcap1 = 850000000000000000000;
-  var newPrice1 = 1700000000000000;
-
-  var newPeriod2 = 7;
-  var newHardcap2 = 2550000000000000000000;
-  var newPrice2 = 2550000000000000;
-
-  var newPeriod3 = 7;
-  var newHardcap3 = 8160000000000000000000;
-  var newPrice3 = 2720000000000000;
-
-  var newPeriod4 = 21;
-  var newHardcap4 = 49300000000000000000000;
-  var newPrice4 = 3400000000000000;
-
-  var newPeriod5 = 41;
-  var newHardcap5 = 59300000000000000000000;
-  var newPrice5 = 7400000000000000;
-
-  var newPeriod5c = 413;
-  var newHardcap5c = 59300000000000000000012;
-  var newPrice5c = 7400000000009999;
-
-
 
   it("first owner: should add stage 1", function() {
     var meta;
@@ -445,27 +448,7 @@ contract('Crowdsale', function(accounts) {
       assert.equal(stages[4], 0, "stage 4 closed wrong");
     });
   });
-/*
-  it("first owner: should not update stages after investments", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.updateStageWithInvested({from: accounts[1]});
-    }).then(function() {
-      return meta.totalInvested();
-    }).then(function(totalInvested) {
-      assert.notEqual(0, totalInvested, "changed");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.totalInvested().then(function(totalInvested) {
-          assert.equal(0, totalInvested, "changed");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-*/
+
   it("first owner: should not insert stage", function() {
     var meta;
     var newPeriod = newPeriod3;
@@ -1454,7 +1437,7 @@ contract('Crowdsale', function(accounts) {
       assert.equal(owner, accounts[0], "Owner not changed");
     });
   });
-
+*/
 
 //
 // State now cleared - now pass control to second account,
@@ -1485,7 +1468,7 @@ contract('Crowdsale', function(accounts) {
     });
   });
 
-// setup all wallets
+  // setup all wallets
   it("ICO 1: should set wallet for investments", function() {
     var meta;
     return Crowdsale.deployed().then(function(instance) {
@@ -1522,6 +1505,7 @@ contract('Crowdsale', function(accounts) {
     });
   });
 
+  // setup percents for founders and bounty tokens
   it("ICO 1: should set founders tokens percent", function() {
     var meta;
     var newFoudnersPercent = 45;
@@ -1548,6 +1532,216 @@ contract('Crowdsale', function(accounts) {
     });
   });
 
+  //
+  // setup miniICO model:
+  // stages
+  //
+  // 1) addStage(1,   850 000000000000000000, 1700000000000000);
+  // 2) addStage(1,  2550 000000000000000000, 2550000000000000);
+  // 3) addStage(1,  8160 000000000000000000, 2720000000000000);
+  // 4) addStage(1, 49300 000000000000000000, 3400000000000000);
+  // 
+  //
+
+
+  var modelPeriod1 = 1;
+  var modelPeriod2 = 1;
+  var modelPeriod3 = 1;
+  var modelPeriod4 = 1;
+
+  it("ICO 1: should setup stages", function() {
+    var meta;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.addStage(modelPeriod1, newHardcap1, newPrice1, {from: accounts[1]});
+    }).then(function() {
+      return meta.addStage(modelPeriod2, newHardcap2, newPrice2, {from: accounts[1]});
+    }).then(function() {
+      return meta.addStage(modelPeriod3, newHardcap3, newPrice3, {from: accounts[1]});
+    }).then(function() {
+      return meta.addStage(modelPeriod4, newHardcap4, newPrice4, {from: accounts[1]});
+    }).then(function() {
+      return meta.stagesCount();
+    }).then(function(stagesCount) {
+      assert.equal(4, stagesCount, "stages count not changed");
+      return meta.totalPeriod.call();
+    }).then(function(totalPeriod) {
+      assert.equal(modelPeriod1 + modelPeriod2 + modelPeriod3 + modelPeriod4, totalPeriod, "total period not changed");
+      return meta.totalHardCap.call();
+    }).then(function(totalHardCap) {
+      assert.equal(newHardcap1 + newHardcap2 + newHardcap3 + newHardcap4, totalHardCap, "total hardcap not changed");
+      return meta.stages(0);
+    }).then(function(stages) {
+      assert.equal(stages[0], modelPeriod1, "stage 1 period wrong");
+      assert.equal(stages[1], newHardcap1, "stage 1 hardcap wrong");
+      assert.equal(stages[2], newPrice1, "stage 1 price wrong");
+      assert.equal(stages[3], 0, "stage 1 invested wrong");
+      assert.equal(stages[4], 0, "stage 1 closed wrong");
+      return meta.stages(1);
+    }).then(function(stages) {
+      assert.equal(stages[0], modelPeriod2, "stage 2 period wrong");
+      assert.equal(stages[1], newHardcap2, "stage 2 hardcap wrong");
+      assert.equal(stages[2], newPrice2, "stage 2 price wrong");
+      assert.equal(stages[3], 0, "stage 2 invested wrong");
+      assert.equal(stages[4], 0, "stage 2 closed wrong");
+      return meta.stages(2);
+    }).then(function(stages) {
+      assert.equal(stages[0], modelPeriod3, "stage 3 period wrong");
+      assert.equal(stages[1], newHardcap3, "stage 3 hardcap wrong");
+      assert.equal(stages[2], newPrice3, "stage 3 price wrong");
+      assert.equal(stages[3], 0, "stage 3 invested wrong");
+      assert.equal(stages[4], 0, "stage 3 closed wrong");
+      return meta.stages(3);
+    }).then(function(stages) {
+      assert.equal(stages[0], modelPeriod4, "stage 4 period wrong");
+      assert.equal(stages[1], newHardcap4, "stage 4 hardcap wrong");
+      assert.equal(stages[2], newPrice4, "stage 4 price wrong");
+      assert.equal(stages[3], 0, "stage 4 invested wrong");
+      assert.equal(stages[4], 0, "stage 4 closed wrong");
+    });
+  });
+
+  it("ICO 1 - ICO not started: should not invest before start date", function() {
+    var meta;
+    var startDate = Math.floor(Date.now()/1000) + 60*60;
+    var invested = web3.toWei(15, 'ether');
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setStart(startDate, {from: accounts[1]});
+    }).then(function() {
+      return meta.start.call();
+    }).then(function(start) {
+      assert.equal(startDate, start, "invest date not changed");
+      return web3.eth.sendTransaction({ from: accounts[4], to: meta.address, value: invested, gas: 180000 })
+    }).then(function() {
+      return meta.totalInvested.call();
+    }).then(function(totalInvested) {
+      assert.equal(0, totalInvested, "invested");
+    }).catch(function(e) {
+      if(e.toString().indexOf("invalid opcode") != -1) {
+        return meta.totalInvested.call().then(function(totalInvested) {
+          assert.equal(0, totalInvested, "invested");
+        });
+      } else {
+        throw e;
+      }
+    });
+  });
+
+  it("ICO 1 - ICO finished: should not invest after ICO finnished", function() {
+    var meta;
+    var startDate = Math.floor(Date.now()/1000) - 100*24*60*60;
+    var invested = web3.toWei(15, 'ether');
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setStart(startDate, {from: accounts[1]});
+    }).then(function() {
+      return meta.start.call();
+    }).then(function(start) {
+      assert.equal(startDate, start, "invest date not changed");
+      return web3.eth.sendTransaction({ from: accounts[4], to: meta.address, value: invested, gas: 180000 })
+    }).then(function() {
+      return meta.totalInvested.call();
+    }).then(function(totalInvested) {
+      assert.equal(0, totalInvested, "invested");
+    }).catch(function(e) {
+      if(e.toString().indexOf("invalid opcode") != -1) {
+        return meta.totalInvested.call().then(function(totalInvested) {
+          assert.equal(0, totalInvested, "invested");
+        });
+      } else {
+        throw e;
+      }
+    });
+  });
+
+
+  it("ICO 1 - ICO started minute ago: should invest returns success", function() {
+    var meta;
+    var metaToken;
+    var startDate = Math.floor(Date.now()/1000) - 60;
+    var investedInEth = 15;
+    var invested = parseInt(web3.toWei(investedInEth, 'ether'));
+    var investedPass1StageInEth = 851;
+    var investedPass1Stage = parseInt(web3.toWei(investedPass1StageInEth, 'ether'));
+    var investedPass2StageInEth = 2551;
+    var investedPass2Stage = parseInt(web3.toWei(investedPass2StageInEth, 'ether'));
+    var investedAfter_1_2_3_in_Ether = 15 + 851 + 2551;
+    var investedAfter_1_2_3_in_Wgei = new BigNumber(web3.toWei(investedAfter_1_2_3_in_Ether, 'ether'));
+    var lastDate = startDate + (modelPeriod1 + modelPeriod2 + modelPeriod3 + modelPeriod4)*24*60*60;
+    var firstInvestorTokens = invested*newPrice1;
+    var investedPass1StageTokens = investedPass1Stage*newPrice1;
+    var investedPass2StageTokens = investedPass2Stage*newPrice2;
+    var lastDateAfterSecondInvestor = 0;
+    var lastDateAfterThridInvestor = 0;
+    //var hardcap = newHardcap1 + newHardcap2 + newHardcap3 + newHardcap4;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setStart(startDate, {from: accounts[1]});
+    }).then(function() {
+      return meta.token.call();
+    }).then(function(token) {
+      metaToken = FidcomToken.at(token);
+      return meta.start.call();
+    }).then(function(start) {
+      assert.equal(startDate, start, "invest date not changed");
+      return meta.lastSaleDate.call();
+    }).then(function(lastSaleDate) {
+      assert.equal(lastDate, lastSaleDate, "invest last sale date");
+      return meta.currentStage.call();
+    }).then(function(stageIndex) {
+      assert.equal(0, stageIndex, "current stage wrong");
+      return web3.eth.sendTransaction({ from: accounts[4], to: meta.address, value: invested, gas: 180000 })
+    }).then(function() {
+      return meta.totalInvested.call();
+    }).then(function(totalInvested) {
+      assert.equal(invested, totalInvested, "not invested");
+      return metaToken.totalSupply.call();
+    }).then(function(totalSupply) {
+      var parsedInvested = web3.toWei(totalSupply, 'ether');
+      assert.equal(firstInvestorTokens, parsedInvested, "not mint right count of tokens");
+    // test to pass first stage //
+      lastDateAfterSecondInvestor = Math.floor(Date.now()/1000) + (modelPeriod2 + modelPeriod3 + modelPeriod4)*24*60*60;
+      return web3.eth.sendTransaction({ from: accounts[5], to: meta.address, value: investedPass1Stage, gas: 180000 })
+    }).then(function() {
+      return meta.totalInvested.call();
+    }).then(function(totalInvested) {
+      assert.equal(invested + investedPass1Stage, totalInvested, "not invested pass stage 1");
+      return metaToken.totalSupply.call();
+    }).then(function(totalSupply) {
+      var parsedInvested = web3.toWei(totalSupply, 'ether');
+      assert.equal(firstInvestorTokens + investedPass1StageTokens, parsedInvested, "not mint right count of tokens  pass stage 1");
+      return meta.currentStage.call();
+    }).then(function(stageIndex) {
+      assert.equal(1, stageIndex, "current stage wrong after second investor");
+      return meta.lastSaleDate.call();
+    }).then(function(lastSaleDate) {
+      assert.equal(lastDateAfterSecondInvestor, lastSaleDate, "invest last sale date after second investor");
+    // test to pass second stage //
+      lastDateAfterThridInvestor = Math.floor(Date.now()/1000) + (modelPeriod3 + modelPeriod4)*24*60*60;
+      return web3.eth.sendTransaction({ from: accounts[6], to: meta.address, value: investedPass2Stage, gas: 180000 })
+    }).then(function() {
+      return meta.totalInvested.call();
+    }).then(function(totalInvested) {
+      assert.equal(investedAfter_1_2_3_in_Wgei.toString(), totalInvested.toString(), "not invested pass stage 2");
+      return metaToken.totalSupply.call();
+    }).then(function(totalSupply) {
+      var investedLocal = new BigNumber(investedPass1Stage).plus(new BigNumber(investedPass2Stage)).plus(new BigNumber(invested));
+      console.log(totalSupply);
+      console.log(investedLocal);
+      assert.equal(investedLocal, totalSupply, "not mint right count of tokens  pass stage 2");
+      return meta.currentStage.call();
+    }).then(function(stageIndex) {
+      assert.equal(2, stageIndex, "current stage wrong after thrid investor");
+      return meta.lastSaleDate.call();
+    }).then(function(lastSaleDate) {
+      console.log(lastDateAfterThridInvestor);
+      assert.equal(lastDateAfterThridInvestor, lastSaleDate, "invest last sale date after thrid investor");
+    });
+  });
+
+
+
 
 //на вот этот адрес 0x74e4270a4c1833c99c3801a97c7311f0bbb405b3
 
@@ -1558,13 +1752,13 @@ contract('Crowdsale', function(accounts) {
   // should not clear stages
   // should not remove stage +
   // should not insert stage +
-  // clear stages
-  // should add stage
-  // should add second stage
-  // should insert stage after 0
-  // should insert second stage after 0
-  // should change stage
-  // should remove stage
+  // clear stages +
+  // should add stage +
+  // should add second stage +
+  // should insert stage after 0 +
+  // should insert second stage after 0 +
+  // should change stage +
+  // should remove stage +
 
 // change wallets and percents tests
 

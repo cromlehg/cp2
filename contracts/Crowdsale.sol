@@ -387,18 +387,18 @@ contract StagedCrowdsale is Ownable {
   }
   
   modifier isUnderHardCap() {
-    require(totalInvested >= totalHardCap);
+    require(totalInvested <= totalHardCap);
     _;
   }
   
   function lastSaleDate() constant returns(uint) {
     require(stages.length > 0);
-    uint lastDate = 0;
+    uint lastDate = start;
     for(uint i=0; i < stages.length; i++) {
-      if(stages[i].invested < stages[i].hardCap) {
+      if(stages[i].invested >= stages[i].hardCap) {
         lastDate = stages[i].closed;
       } else {
-        lastDate = lastDate.add(stages[i].period);
+        lastDate = lastDate.add(stages[i].period * 1 days);
       }
     }
     return lastDate;
@@ -416,6 +416,7 @@ contract StagedCrowdsale is Ownable {
         previousDate = stages[i].closed;
       }
     }
+    return 1;
   }
 
   function updateStageWithInvested() internal {
