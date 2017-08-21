@@ -445,7 +445,27 @@ contract('Crowdsale', function(accounts) {
       assert.equal(stages[4], 0, "stage 4 closed wrong");
     });
   });
-
+/*
+  it("first owner: should not update stages after investments", function() {
+    var meta;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.updateStageWithInvested({from: accounts[1]});
+    }).then(function() {
+      return meta.totalInvested();
+    }).then(function(totalInvested) {
+      assert.notEqual(0, totalInvested, "changed");
+    }).catch(function(e) {
+      if(e.toString().indexOf("invalid opcode") != -1) {
+        return meta.totalInvested().then(function(totalInvested) {
+          assert.equal(0, totalInvested, "changed");
+        });
+      } else {
+        throw e;
+      }
+    });
+  });
+*/
   it("first owner: should not insert stage", function() {
     var meta;
     var newPeriod = newPeriod3;
@@ -1437,17 +1457,23 @@ contract('Crowdsale', function(accounts) {
 
 
 //
-// state now cleared - now pass control to second account,
-// and configure to minimodel and test it
-// 
-// -- and pass tests for change wallets and percents!!!
+// State now cleared - now pass control to second account,
+// and configure to minimodel and test it.
 //
+//  1. Owner wallet = 1
+//  2. multisigWallet = 0
+//  3. founders wallet = 2
+//  4. bounty wallet = 3
+//  5. founders percent - 4.5% - in 1000 part - 45
+//  6. bounty percent - 0.5% - in 1000 part - 5
 //
+//  7. investor 1 wallet = 4
+//  8. investor 2 wallet = 5
+//  9. investor 3 wallet = 6
+// 10. investor 4 wallet = 7
+// 11. investor 5 wallet = 8
 //
-//
-//
-//
-  it("second owner: should change ownership", function() {
+  it("ICO 1: should change ownership", function() {
     var meta;
     return Crowdsale.deployed().then(function(instance) {
       meta = instance;
@@ -1459,9 +1485,73 @@ contract('Crowdsale', function(accounts) {
     });
   });
 
+// setup all wallets
+  it("ICO 1: should set wallet for investments", function() {
+    var meta;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setMultisigWallet(accounts[0], {from: accounts[1]});
+    }).then(function() {
+      return meta.multisigWallet.call();
+    }).then(function(wallet) {
+      assert.equal(accounts[0], wallet, "not changed");
+    });
+  });
+
+  it("ICO 1: should set wallet for founders tokens", function() {
+    var meta;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setFoundersTokensWallet(accounts[2], {from: accounts[1]});
+    }).then(function() {
+      return meta.foundersTokensWallet.call();
+    }).then(function(wallet) {
+      assert.equal(accounts[2], wallet, "not changed");
+    });
+  });
+
+  it("ICO 1: should set wallet for bounty tokens", function() {
+    var meta;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setBountyTokensWallet(accounts[3], {from: accounts[1]});
+    }).then(function() {
+      return meta.bountyTokensWallet.call();
+    }).then(function(wallet) {
+      assert.equal(accounts[3], wallet, "not changed");
+    });
+  });
+
+  it("ICO 1: should set founders tokens percent", function() {
+    var meta;
+    var newFoudnersPercent = 45;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setFoundersPercent(newFoudnersPercent, {from: accounts[1]});
+    }).then(function() {
+      return meta.foundersPercent.call();
+    }).then(function(foundersPercent) {
+      assert.equal(newFoudnersPercent, foundersPercent, "not changed");
+    });
+  });
+
+  it("ICO 1: should set bounty percent", function() {
+    var meta;
+    var newBountyPercent = 45;
+    return Crowdsale.deployed().then(function(instance) {
+      meta = instance;
+      return meta.setBountyPercent(newBountyPercent, {from: accounts[1]});
+    }).then(function() {
+      return meta.bountyPercent.call();
+    }).then(function(bountyPercent) {
+      assert.equal(newBountyPercent, bountyPercent, "not changed");
+    });
+  });
 
 
 //на вот этот адрес 0x74e4270a4c1833c99c3801a97c7311f0bbb405b3
+
+// should test update invested for owner and not onwer!!!!!!
 
   // should add stage +
   // should not change stage + 

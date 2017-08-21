@@ -344,6 +344,7 @@ contract StagedCrowdsale is Ownable {
     require(number >= 0 &&number < stages.length);
 
     Stage storage stage = stages[number];
+
     totalHardCap = totalHardCap.sub(stage.hardCap);    
     totalPeriod = totalPeriod.sub(stage.period);    
 
@@ -419,6 +420,7 @@ contract StagedCrowdsale is Ownable {
 
   function updateStageWithInvested() internal {
     uint stageIndex = currentStage();
+    totalInvested = totalInvested.add(msg.value);
     Stage storage stage = stages[stageIndex];
     stage.invested = stage.invested.add(msg.value);
     if(stage.invested >= stage.hardCap) {
@@ -433,45 +435,47 @@ contract Crowdsale is StagedCrowdsale, Pausable {
     
   address public multisigWallet;
   
+  address public foundersTokensWallet;
+  
+  address public bountyTokensWallet;
+  
+  uint public percentRate = 1000;
+
   uint public foundersPercent;
   
   uint public bountyPercent;
   
-  address public foundersTokensWallet;
-  
-  address public bountyTokensWallet;
-
   FidcomToken public token = new FidcomToken();
 
-  function setFoundersPercent(uint8 newFoundersPercent) onlyOwner {
-    require(newFoundersPercent > 0 && newFoundersPercent < 100);
+  function setFoundersPercent(uint newFoundersPercent) onlyOwner {
+    require(newFoundersPercent > 0 && newFoundersPercent < percentRate);
     foundersPercent = newFoundersPercent;
   }
   
-  function setBountyPercent(uint8 newBountyPercent) onlyOwner {
-    require(newBountyPercent > 0 && newBountyPercent < 100);
+  function setBountyPercent(uint newBountyPercent) onlyOwner {
+    require(newBountyPercent > 0 && newBountyPercent < percentRate);
     bountyPercent = newBountyPercent;
   }
   
-  function setMultisigWallet(uint8 newMultisigWallet) onlyOwner {
+  function setMultisigWallet(address newMultisigWallet) onlyOwner {
     multisigWallet = newMultisigWallet;
   }
 
-  function setFoundersTokensWallet(uint8 newFoundersTokensWallet) onlyOwner {
+  function setFoundersTokensWallet(address newFoundersTokensWallet) onlyOwner {
     foundersTokensWallet = newFoundersTokensWallet;
   }
 
-  function setBountyTokensWallet(uint8 newBountyTokensWallet) onlyOwner {
+  function setBountyTokensWallet(address newBountyTokensWallet) onlyOwner {
     bountyTokensWallet = newBountyTokensWallet;
   }
 
   function finishMinting() public whenNotPaused onlyOwner {
     uint issuedTokenSupply = token.totalSupply();
     uint summaryTokensPercent = bountyPercent + foundersPercent;
-    uint summaryFoundersTokens = issuedTokenSupply.mul(summaryTokensPercent).div(100 - summaryTokensPercent);
+    uint summaryFoundersTokens = issuedTokenSupply.mul(summaryTokensPercent).div(percentRate - summaryTokensPercent);
     uint totalSupply = summaryFoundersTokens + issuedTokenSupply;
-    uint foundersTokens = totalSupply.div(100).mul(foundersPercent);
-    uint bountyTokens = totalSupply.div(100).mul(bountyPercent);
+    uint foundersTokens = totalSupply.div(percentRate).mul(foundersPercent);
+    uint bountyTokens = totalSupply.div(percentRate).mul(bountyPercent);
     token.mint(foundersTokensWallet, foundersTokens);
     token.mint(bountyTokensWallet, bountyTokens);
     token.finishMinting();
