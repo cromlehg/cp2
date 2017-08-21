@@ -1659,6 +1659,7 @@ contract('Crowdsale', function(accounts) {
   it("ICO 1 - ICO started minute ago: should invest returns success", function() {
     var meta;
     var metaToken;
+    var catched = false;
     var startDate = Math.floor(Date.now()/1000) - 60;
     var investedInEth = 15;
     var invested = parseInt(web3.toWei(investedInEth, 'ether'));
@@ -1666,14 +1667,28 @@ contract('Crowdsale', function(accounts) {
     var investedPass1Stage = parseInt(web3.toWei(investedPass1StageInEth, 'ether'));
     var investedPass2StageInEth = 2551;
     var investedPass2Stage = parseInt(web3.toWei(investedPass2StageInEth, 'ether'));
-    var investedAfter_1_2_3_in_Ether = 15 + 851 + 2551;
+    var investedPass3StageInEth = 8161;
+    var investedPass3Stage = parseInt(web3.toWei(investedPass3StageInEth, 'ether'));
+    var investedPass4StageInEth = 49301;
+    var investedPass4Stage = parseInt(web3.toWei(investedPass4StageInEth, 'ether'));
+
+    var investedAfter_1_2_3_in_Ether = investedInEth + investedPass1StageInEth + investedPass2StageInEth;
     var investedAfter_1_2_3_in_Wgei = new BigNumber(web3.toWei(investedAfter_1_2_3_in_Ether, 'ether'));
+
+    var investedAfter_1_2_3_4_in_Ether = investedInEth + investedPass1StageInEth + investedPass2StageInEth + investedPass3StageInEth;
+    var investedAfter_1_2_3_4_in_Wgei = new BigNumber(web3.toWei(investedAfter_1_2_3_4_in_Ether, 'ether'));
+
+    var investedAfter_1_2_3_4_5_in_Ether = investedInEth + investedPass1StageInEth + investedPass2StageInEth + investedPass3StageInEth + investedPass4StageInEth;
+    var investedAfter_1_2_3_4_5_in_Wgei = new BigNumber(web3.toWei(investedAfter_1_2_3_4_5_in_Ether, 'ether'));
+
     var lastDate = startDate + (modelPeriod1 + modelPeriod2 + modelPeriod3 + modelPeriod4)*24*60*60;
     var firstInvestorTokens = invested*newPrice1;
     var investedPass1StageTokens = investedPass1Stage*newPrice1;
     var investedPass2StageTokens = investedPass2Stage*newPrice2;
     var lastDateAfterSecondInvestor = 0;
     var lastDateAfterThridInvestor = 0;
+    var lastDateAfter4Investor = 0;
+    var lastDateAfter5Investor = 0;
     //var hardcap = newHardcap1 + newHardcap2 + newHardcap3 + newHardcap4;
     return Crowdsale.deployed().then(function(instance) {
       meta = instance;
@@ -1716,6 +1731,8 @@ contract('Crowdsale', function(accounts) {
       assert.equal(1, stageIndex, "current stage wrong after second investor");
       return meta.lastSaleDate.call();
     }).then(function(lastSaleDate) {
+      console.log(lastSaleDate);
+      console.log(lastDateAfterSecondInvestor);
       assert.equal(lastDateAfterSecondInvestor, lastSaleDate, "invest last sale date after second investor");
     // test to pass second stage //
       lastDateAfterThridInvestor = Math.floor(Date.now()/1000) + (modelPeriod3 + modelPeriod4)*24*60*60;
@@ -1726,564 +1743,86 @@ contract('Crowdsale', function(accounts) {
       assert.equal(investedAfter_1_2_3_in_Wgei.toString(), totalInvested.toString(), "not invested pass stage 2");
       return metaToken.totalSupply.call();
     }).then(function(totalSupply) {
-      var investedLocal = new BigNumber(investedPass1Stage).plus(new BigNumber(investedPass2Stage)).plus(new BigNumber(invested));
+      var investedLocal1 = new BigNumber(investedInEth).mul(newPrice1);
+      var investedLocal2 = new BigNumber(investedPass1StageInEth).mul(newPrice1);
+      var investedLocal3 = new BigNumber(investedPass2StageInEth).mul(newPrice2);
+      var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3);
       console.log(totalSupply);
       console.log(investedLocal);
-      assert.equal(investedLocal, totalSupply, "not mint right count of tokens  pass stage 2");
+      assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 2");
       return meta.currentStage.call();
     }).then(function(stageIndex) {
       assert.equal(2, stageIndex, "current stage wrong after thrid investor");
       return meta.lastSaleDate.call();
     }).then(function(lastSaleDate) {
+      console.log(lastSaleDate);
       console.log(lastDateAfterThridInvestor);
       assert.equal(lastDateAfterThridInvestor, lastSaleDate, "invest last sale date after thrid investor");
-    });
-  });
-
-
-
-
-//на вот этот адрес 0x74e4270a4c1833c99c3801a97c7311f0bbb405b3
-
-// should test update invested for owner and not onwer!!!!!!
-
-  // should add stage +
-  // should not change stage + 
-  // should not clear stages
-  // should not remove stage +
-  // should not insert stage +
-  // clear stages +
-  // should add stage +
-  // should add second stage +
-  // should insert stage after 0 +
-  // should insert second stage after 0 +
-  // should change stage +
-  // should remove stage +
-
-// change wallets and percents tests
-
-  //============= first owner, function calls from owner ====================//
-  // set pause, set unpause tested above
-/*
-  it("first owner: should set start date", function() {
-    var meta;
-    var newStart = 1502463457;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setStart(newStart, {from: accounts[0]});
+    // test to pass 3 stage //
+      lastDateAfter4Investor = Math.floor(Date.now()/1000) + (modelPeriod4)*24*60*60;
+      return web3.eth.sendTransaction({ from: accounts[7], to: meta.address, value: investedPass3Stage, gas: 180000 })
     }).then(function() {
-      return meta.start.call();
-    }).then(function(start) {
-      assert.equal(newStart, start, "Start date not changed");
-    });
-  });
-
-  it("first owner: should set period", function() {
-    var meta;
-    var newPeriod = 990;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setPeriod(newPeriod, {from: accounts[0]});
+      return meta.totalInvested.call();
+    }).then(function(totalInvested) {
+      assert.equal(investedAfter_1_2_3_4_in_Wgei.toString(), totalInvested.toString(), "not invested pass stage 3");
+      return metaToken.totalSupply.call();
+    }).then(function(totalSupply) {
+      var investedLocal1 = new BigNumber(investedInEth).mul(newPrice1);
+      var investedLocal2 = new BigNumber(investedPass1StageInEth).mul(newPrice1);
+      var investedLocal3 = new BigNumber(investedPass2StageInEth).mul(newPrice2);
+      var investedLocal4 = new BigNumber(investedPass3StageInEth).mul(newPrice3);
+      var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3).add(investedLocal4);
+      console.log(totalSupply);
+      console.log(investedLocal);
+      assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 3");
+      return meta.currentStage.call();
+    }).then(function(stageIndex) {
+      assert.equal(3, stageIndex, "current stage wrong after 4 investor");
+      return meta.lastSaleDate.call();
+    }).then(function(lastSaleDate) {
+      console.log(lastSaleDate);
+      console.log(lastDateAfter4Investor);
+      assert.equal(lastDateAfter4Investor, lastSaleDate, "invest last sale date after 4 investor");
+    // test to pass 4 stage //
+      lastDateAfter5Investor = Math.floor(Date.now()/1000);
+      return web3.eth.sendTransaction({ from: accounts[8], to: meta.address, value: investedPass4Stage, gas: 180000 })
     }).then(function() {
-      return meta.period.call();
-    }).then(function(period) {
-      assert.equal(newPeriod, period, "Period not changed");
-    });
-  });
-
-  it("first owner: should change wallet", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setWallet(accounts[2], {from: accounts[0]});
-    }).then(function() {
-      return meta.wallet.call();
-    }).then(function(wallet) {
-      assert.equal(accounts[2], wallet, "Wallet changed");
-    });
-  });
-
-  it("first owner: should change ownership", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.transferOwnership(accounts[4], {from: accounts[0]});
-    }).then(function() {
-      return meta.owner.call();
-    }).then(function(owner) {
-      assert.equal(owner, accounts[4], "Owner not changed");
-    });
-  });
-
-  //============= second owner, function calls from owner ====================//
-
-  it("second owner: should change ownership", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.transferOwnership(accounts[1], {from: accounts[4]});
-    }).then(function() {
-      return meta.owner.call();
-    }).then(function(owner) {
-      assert.equal(owner, accounts[1], "Owner not changed");
-    });
-  });
-
-  it("second owner: should set start date", function() {
-    var meta;
-    var newStart = 1502463457;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setStart(newStart, {from: accounts[1]});
-    }).then(function() {
-      return meta.start.call();
-    }).then(function(start) {
-      assert.equal(newStart, start, "Start date not changed");
-    });
-  });
-
-  it("second owner: should set period", function() {
-    var meta;
-    var newPeriod = 999;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setPeriod(newPeriod, {from: accounts[1]});
-    }).then(function() {
-      return meta.period.call();
-    }).then(function(period) {
-      assert.equal(newPeriod, period, "Period not changed");
-    });
-  });
-
-  it("second owner: should change wallet", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setWallet(accounts[0], {from: accounts[1]});
-    }).then(function() {
-      return meta.wallet.call();
-    }).then(function(wallet) {
-      assert.equal(accounts[0], wallet, "Wallet changed");
-    });
-  });
-
-
-  //============= second owner, function calls not from owner ====================//
-
-  it("second owner: should not change ownership", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.transferOwnership(accounts[2], {from: accounts[0]});
-    }).then(function() {
-      return meta.owner.call();
-    }).then(function(owner) {
-      assert.notEqual(accounts[2], owner, "Owner changed");
+      return meta.totalInvested.call();
+    }).then(function(totalInvested) {
+      assert.equal(investedAfter_1_2_3_4_5_in_Wgei.toString(), totalInvested.toString(), "not invested pass stage 4");
+      return metaToken.totalSupply.call();
+    }).then(function(totalSupply) {
+      var investedLocal1 = new BigNumber(investedInEth).mul(newPrice1);
+      var investedLocal2 = new BigNumber(investedPass1StageInEth).mul(newPrice1);
+      var investedLocal3 = new BigNumber(investedPass2StageInEth).mul(newPrice2);
+      var investedLocal4 = new BigNumber(investedPass3StageInEth).mul(newPrice3);
+      var investedLocal5 = new BigNumber(investedPass4StageInEth).mul(newPrice4);
+      var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3).add(investedLocal4).add(investedLocal5);
+      console.log(totalSupply);
+      console.log(investedLocal);
+      assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 4");
+      return meta.lastSaleDate.call();
+    }).then(function(lastSaleDate) {
+      console.log(lastSaleDate);
+      console.log(lastDateAfter5Investor);
+      assert.equal(lastDateAfter5Investor, lastSaleDate, "invest last sale date after 5 investor");
+    // try to invest - should fail
+      return web3.eth.sendTransaction({ from: accounts[9], to: meta.address, value: investedPass4Stage, gas: 180000 })
     }).catch(function(e) {
       if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.owner.call().then(function(owner) {
-          assert.notEqual(accounts[2], owner, "Owner changed");
-        });
+        catched = true;
+        return true;
       } else {
         throw e;
       }
+    }).then(function() {
+      assert.equal(true, catched, "not catched");
+    // try to move tokens - not moved
+    // finish minting try - it should mint tokens, check balances
+      return meta.finishMinting({ from: accounts[1], gas: 180000 })
+    // try to move tokens - moved
     });
   });
 
-  it("second owner: should not change start date", function() {
-    var meta;
-    var newStart = 1502463498;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setStart(newStart, {from: accounts[0]});
-    }).then(function() {
-      return meta.start.call();
-    }).then(function(start) {
-      assert.notEqual(newStart, start, "Start date changed");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.start.call().then(function(start) {
-          assert.notEqual(newStart, start, "Start date changed");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  it("second owner: should not change period", function() {
-    var meta;
-    var newPeriod = 95;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setPeriod(newPeriod, {from: accounts[0]});
-    }).then(function() {
-      return meta.period.call();
-    }).then(function(period) {
-      assert.notEqual(newPeriod, period, "Period changed");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.period.call().then(function(period) {
-          assert.notEqual(newPeriod, period, "Period changed");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  it("second owner: should not paused", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.pause({from: accounts[0]});
-    }).then(function() {
-      return meta.paused.call();
-    }).then(function(paused) {
-      assert.notEqual(true, paused, "paused");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.paused.call().then(function(paused) {
-          assert.notEqual(true, paused, "paused");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  it("second owner: should paused", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.pause({from: accounts[1]});
-    }).then(function() {
-      return meta.paused.call();
-    }).then(function(paused) {
-      assert.equal(true, paused, "not paused");
-    });
-  });
-
-  it("second owner: should not paused when paused", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.pause({from: accounts[1]});
-    }).then(function() {
-      assert.equal(true, false, "paused when paused");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return assert.equal(true, true, "paused when paused");
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  it("second owner: should not unpaused", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.unpause({from: accounts[0]});
-    }).then(function() {
-      return meta.paused.call();
-    }).then(function(paused) {
-      assert.equal(true, paused, "paused");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.paused.call().then(function(paused) {
-          assert.equal(true, paused, "paused");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  it("second owner: should unpaused", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.unpause({from: accounts[1]});
-    }).then(function() {
-      return meta.paused.call();
-    }).then(function(paused) {
-      assert.equal(false, paused, "not unpaused");
-    });
-  });
-
-  it("second owner: should not unpaused when unpaused", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.unpause({from: accounts[1]});
-    }).then(function() {
-      assert.equal(true, false, "unpaused when unpaused");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return assert.equal(true, true, "unpaused when unpaused");
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  it("second owner: should not change wallet", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setWallet(accounts[1], {from: accounts[0]});
-    }).then(function() {
-      return meta.wallet.call();
-    }).then(function(wallet) {
-      assert.notEqual(accounts[1], wallet, "wallet changed");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.wallet.call().then(function(wallet) {
-          assert.notEqual(accounts[1], wallet, "paused");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  //===================== perform test after secodnd owner tests ==================//
-  //   account 0 - old owner
-  //   account 1 - current owner
-  //   account 2 - wallet
-  //   start - 0
-  //   period - 0
-  //   paused = not
-  //
-
-  it("perform after second: should set start date to zero", function() {
-    var meta;
-    var newStart = 0;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setStart(newStart, {from: accounts[1]});
-    }).then(function() {
-      return meta.start.call();
-    }).then(function(start) {
-      assert.equal(newStart, start, "Start date not changed");
-    });
-  });
-
-  it("perform after second: should change period to zero", function() {
-    var meta;
-    var newPeriod = 5;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setPeriod(newPeriod, {from: accounts[1]});
-    }).then(function() {
-      return meta.period.call();
-    }).then(function(period) {
-      assert.equal(newPeriod, period, "Period not changed");
-    });
-  });
-
-  it("perform after second: should change wallet to one", function() {
-    var meta;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setWallet(accounts[2], {from: accounts[1]});
-    }).then(function() {
-      return meta.wallet.call();
-    }).then(function(wallet) {
-      assert.equal(accounts[2], wallet, "Wallet changed");
-    });
-  });
-
-
-  //==================== investments time tests ========================//
-  //
-  // owner initialized in customer way - changed to customer after deploy
-  // wallet initialized as 2
-  // otjer fields initialized in after deploy state
-  // detailed:
-  //   account 0 - old owner
-  //   account 1 - current owner
-  //   account 2 - wallet
-  //   start - 0 - should change in current tests
-  //   period - 5
-  //   paused = not
-  //
-  //   work account - 3
-  //
-
-  it("investment time test: should not invest before start date", function() {
-    var meta;
-    var startDate = Math.floor(Date.now()/1000) + 60*60;
-    var invested = web3.toWei(15, 'ether');
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setStart(startDate, {from: accounts[1]});
-    }).then(function(wallet) {
-      return web3.eth.sendTransaction({ from: accounts[3], to: meta.address, value: invested, gas: 180000 })
-    }).then(function() {
-      return meta.total.call();
-    }).then(function(total) {
-      assert.equal(0, total, "invested");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.total.call().then(function(total) {
-          assert.equal(0, total, "invested");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  it("investment time test: should not invest after start date", function() {
-    var meta;
-    var startDate = Math.floor(Date.now()/1000) - 10*24*60*60;
-    var invested = web3.toWei(15, 'ether');
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setStart(startDate, {from: accounts[1]});
-    }).then(function(wallet) {
-      return web3.eth.sendTransaction({ from: accounts[3], to: meta.address, value: invested, gas: 180000 })
-    }).then(function() {
-      return meta.total.call();
-    }).then(function(total) {
-      assert.equal(0, total, "invested");
-    }).catch(function(e) {
-      if(e.toString().indexOf("invalid opcode") != -1) {
-        return meta.total.call().then(function(total) {
-          assert.equal(0, total, "invested");
-        });
-      } else {
-        throw e;
-      }
-    });
-  });
-
-  //======================= integration test ==========================================//
-  //
-  // send from account 3 - 15
-  // send from account 4 - 40
-  // send from account 5 - 65
-  //
-  it("Integration test during invest time", function() {
-    var meta;
-    var gasNeeds = 140000;
-    var startDate = Math.floor(Date.now()/1000) - 2*24*60*60;
-    var invested1 = parseInt(web3.toWei(15, 'ether'));
-    var invested2 = parseInt(web3.toWei(40, 'ether'));
-    var invested3 = parseInt(web3.toWei(165, 'ether'));
-    var invested4 = parseInt(web3.toWei(385, 'ether'));
-    var walletBalance;
-    return Crowdsale.deployed().then(function(instance) {
-      meta = instance;
-      return meta.setStart(startDate, {from: accounts[1]});
-    }).then(function(wallet) {
-      return web3.eth.getBalance(accounts[2]);
-    }).then(function(balance) {
-      walletBalance = parseInt(balance);
-      return web3.eth.sendTransaction({ from: accounts[3], to: meta.address, value: invested1, gas: gasNeeds });
-    }).then(function() {
-      return meta.total.call();
-    }).then(function(total) {
-      return assert.equal(invested1, total, "wrong total field");
-    }).then(function() {
-      return meta.totalInvestors.call();
-    }).then(function(totalInvestors) {
-      return assert.equal(1, totalInvestors, "wrong investors count");
-    }).then(function() {
-      return meta.investors.call(0);
-    }).then(function(investor) {
-      return assert.equal(accounts[3], investor, "wrong investor address");
-    }).then(function() {
-      return meta.balanceOf.call(accounts[3]);
-    }).then(function(balance) {
-      return assert.equal(invested1, balance, "wrong investor balance");
-    }).then(function() {
-      return web3.eth.getBalance(accounts[2]);
-    }).then(function(balance) {
-      console.log("Wallet old balance: " + walletBalance);
-      console.log("Ivested: " + invested1);
-      console.log("Wallet current balance: " + balance);
-      console.log("Wallet current balance should be: " + (walletBalance + invested1));
-      return assert.equal(walletBalance + invested1, balance, "wrong wallet balance");
-    // 2
-    }).then(function() {
-      return web3.eth.sendTransaction({ from: accounts[4], to: meta.address, value: invested2, gas: gasNeeds });
-    }).then(function() {
-      return meta.total.call();
-    }).then(function(total) {
-      return assert.equal(invested1 + invested2, total, "wrong total field after second invest");
-    }).then(function() {
-      return meta.totalInvestors.call();
-    }).then(function(totalInvestors) {
-      return assert.equal(2, totalInvestors, "wrong investors count - should be 2");
-    }).then(function() {
-      return meta.investors.call(1);
-    }).then(function(investor) {
-      return assert.equal(accounts[4], investor, "wrong second investor address");
-    }).then(function() {
-      return meta.balanceOf.call(accounts[4]);
-    }).then(function(balance) {
-      return assert.equal(invested2, balance, "wrong second investor balance");
-    }).then(function() {
-      return web3.eth.getBalance(accounts[2]);
-    }).then(function(balance) {
-      return assert.equal(walletBalance + invested1 + invested2, balance, "wrong wallet balance after second investor");
-    // 3
-    }).then(function() {
-      return web3.eth.sendTransaction({ from: accounts[5], to: meta.address, value: invested3, gas: gasNeeds });
-    }).then(function() {
-      return meta.total.call();
-    }).then(function(total) {
-      return assert.equal(invested1 + invested2 + invested3, total, "wrong total field after thrid invest");
-    }).then(function() {
-      return meta.totalInvestors.call();
-    }).then(function(totalInvestors) {
-      return assert.equal(3, totalInvestors, "wrong investors count - should be 3");
-    }).then(function() {
-      return meta.investors.call(2);
-    }).then(function(investor) {
-      return assert.equal(accounts[5], investor, "wrong thrid investor address");
-    }).then(function() {
-      return meta.balanceOf.call(accounts[5]);
-    }).then(function(balance) {
-      return assert.equal(invested3, balance, "wrong thrid investor balance");
-    }).then(function() {
-      return web3.eth.getBalance(accounts[2]);
-    }).then(function(balance) {
-      return assert.equal(walletBalance + invested1 + invested2 + invested3, balance, "wrong wallet balance after thrid investor");
-    // 3x2
-    }).then(function() {
-      return web3.eth.sendTransaction({ from: accounts[5], to: meta.address, value: invested4, gas: gasNeeds });
-    }).then(function() {
-      return meta.total.call();
-    }).then(function(total) {
-      return assert.equal(invested1 + invested2 + invested3 + invested4, total, "wrong total field after trid twice invest");
-    }).then(function() {
-      return meta.totalInvestors.call();
-    }).then(function(totalInvestors) {
-      return assert.equal(3, totalInvestors, "wrong investors count after twice invest - should be 3");
-    }).then(function() {
-      return meta.balanceOf.call(accounts[5]);
-    }).then(function(balance) {
-      return assert.equal(invested3 + invested4, balance, "wrong thrid investor balance afte twice invest");
-    }).then(function() {
-      return web3.eth.getBalance(accounts[2]);
-    }).then(function(balance) {
-
-      console.log("====================================================================");
-      var invested = invested1 + invested2 + invested3 + invested4;
-      console.log("Wallet old balance: " + walletBalance);
-      console.log("Ivested: " + invested);
-      console.log("Wallet current balance: " + balance);
-      console.log("Wallet current balance should be: " + (walletBalance + invested));
-
-
-      return assert.equal(walletBalance + invested1 + invested2 + invested3 + invested4, balance, "wrong wallet balance after thrid twice invest");
-    });
-
-  });*/
-
-
+  // try finish minting for not owner!!!
 });
