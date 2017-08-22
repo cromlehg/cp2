@@ -1731,9 +1731,13 @@ contract('Crowdsale', function(accounts) {
       assert.equal(1, stageIndex, "current stage wrong after second investor");
       return meta.lastSaleDate.call();
     }).then(function(lastSaleDate) {
-      console.log(lastSaleDate);
-      console.log(lastDateAfterSecondInvestor);
-      assert.equal(lastDateAfterSecondInvestor, lastSaleDate, "invest last sale date after second investor");
+      var fixedDate = parseInt(lastSaleDate);
+      if(fixedDate > lastDateAfterSecondInvestor) {
+	fixedDate--;
+      }
+//      console.log(lastSaleDate);
+//      console.log(lastDateAfterSecondInvestor);
+      assert.equal(lastDateAfterSecondInvestor, fixedDate, "invest last sale date after second investor");
     // test to pass second stage //
       lastDateAfterThridInvestor = Math.floor(Date.now()/1000) + (modelPeriod3 + modelPeriod4)*24*60*60;
       return web3.eth.sendTransaction({ from: accounts[6], to: meta.address, value: investedPass2Stage, gas: 180000 })
@@ -1755,9 +1759,13 @@ contract('Crowdsale', function(accounts) {
       assert.equal(2, stageIndex, "current stage wrong after thrid investor");
       return meta.lastSaleDate.call();
     }).then(function(lastSaleDate) {
-      console.log(lastSaleDate);
-      console.log(lastDateAfterThridInvestor);
-      assert.equal(lastDateAfterThridInvestor, lastSaleDate, "invest last sale date after thrid investor");
+      var fixedDate = parseInt(lastSaleDate);
+      if(fixedDate > lastDateAfterThridInvestor) {
+	fixedDate--;
+      }
+//      console.log(lastSaleDate);
+//      console.log(lastDateAfterThridInvestor);
+      assert.equal(lastDateAfterThridInvestor, fixedDate, "invest last sale date after thrid investor");
     // test to pass 3 stage //
       lastDateAfter4Investor = Math.floor(Date.now()/1000) + (modelPeriod4)*24*60*60;
       return web3.eth.sendTransaction({ from: accounts[7], to: meta.address, value: investedPass3Stage, gas: 180000 })
@@ -1772,17 +1780,21 @@ contract('Crowdsale', function(accounts) {
       var investedLocal3 = new BigNumber(investedPass2StageInEth).mul(newPrice2);
       var investedLocal4 = new BigNumber(investedPass3StageInEth).mul(newPrice3);
       var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3).add(investedLocal4);
-      console.log(totalSupply);
-      console.log(investedLocal);
+//      console.log(totalSupply);
+//      console.log(investedLocal);
       assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 3");
       return meta.currentStage.call();
     }).then(function(stageIndex) {
       assert.equal(3, stageIndex, "current stage wrong after 4 investor");
       return meta.lastSaleDate.call();
     }).then(function(lastSaleDate) {
-      console.log(lastSaleDate);
-      console.log(lastDateAfter4Investor);
-      assert.equal(lastDateAfter4Investor, lastSaleDate, "invest last sale date after 4 investor");
+//      console.log(lastSaleDate);
+//      console.log(lastDateAfter4Investor);
+      var fixedDate = parseInt(lastSaleDate);
+      if(fixedDate > lastDateAfter4Investor) {
+	fixedDate--;
+      }
+      assert.equal(lastDateAfter4Investor, fixedDate, "invest last sale date after 4 investor");
     // test to pass 4 stage //
       lastDateAfter5Investor = Math.floor(Date.now()/1000);
       return web3.eth.sendTransaction({ from: accounts[8], to: meta.address, value: investedPass4Stage, gas: 180000 })
@@ -1798,13 +1810,13 @@ contract('Crowdsale', function(accounts) {
       var investedLocal4 = new BigNumber(investedPass3StageInEth).mul(newPrice3);
       var investedLocal5 = new BigNumber(investedPass4StageInEth).mul(newPrice4);
       var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3).add(investedLocal4).add(investedLocal5);
-      console.log(totalSupply);
-      console.log(investedLocal);
+//      console.log(totalSupply);
+//      console.log(investedLocal);
       assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 4");
       return meta.lastSaleDate.call();
     }).then(function(lastSaleDate) {
-      console.log(lastSaleDate);
-      console.log(lastDateAfter5Investor);
+/      console.log(lastSaleDate);
+//      console.log(lastDateAfter5Investor);
       assert.equal(lastDateAfter5Investor, lastSaleDate, "invest last sale date after 5 investor");
     // try to invest - should fail
       return web3.eth.sendTransaction({ from: accounts[9], to: meta.address, value: investedPass4Stage, gas: 180000 })
