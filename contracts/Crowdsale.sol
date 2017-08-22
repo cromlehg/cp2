@@ -507,7 +507,7 @@ contract Crowdsale is StagedCrowdsale, Pausable {
     Stage storage stage = stages[stageIndex];
     multisigWallet.transfer(msg.value);
     uint price = stage.price;
-    uint tokens = price.mul(msg.value).div(1 ether);
+    uint tokens = msg.value.div(price);
     updateStageWithInvested();
     token.mint(msg.sender, tokens);
   }
