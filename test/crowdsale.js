@@ -1521,7 +1521,7 @@ contract('Crowdsale', function(accounts) {
 
   it("ICO 1: should set bounty percent", function() {
     var meta;
-    var newBountyPercent = 45;
+    var newBountyPercent = 5;
     return Crowdsale.deployed().then(function(instance) {
       meta = instance;
       return meta.setBountyPercent(newBountyPercent, {from: accounts[1]});

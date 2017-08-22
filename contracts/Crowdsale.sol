@@ -278,11 +278,30 @@ contract Pausable is Ownable {
 
 contract FidcomToken is MintableToken {
     
-    string public constant name = "Fidcom";
+  string public constant name = "Fidcom";
+   
+  string public constant symbol = "FDC";
     
-    string public constant symbol = "FDC";
-    
-    uint32 public constant decimals = 18;
+  uint32 public constant decimals = 18;
+
+  bool public transferAllowed = false;
+
+  modifier whenTransferAllowed() {
+    require(transferAllowed);
+    _;
+  }
+
+  function allowTransfer() onlyOwner {
+    transferAllowed = true;
+  }
+
+  function transfer(address _to, uint256 _value) whenTransferAllowed returns (bool) {
+    return super.transfer(_to, _value);
+  }
+
+  function transferFrom(address _from, address _to, uint256 _value) whenTransferAllowed returns (bool) {
+    return super.transferFrom(_from, _to, _value);
+  }
     
 }
 
@@ -480,6 +499,7 @@ contract Crowdsale is StagedCrowdsale, Pausable {
     token.mint(foundersTokensWallet, foundersTokens);
     token.mint(bountyTokensWallet, bountyTokens);
     token.finishMinting();
+    token.allowTransfer();
   }
 
   function createTokens() whenNotPaused isUnderHardCap saleIsOn payable {
