@@ -1827,6 +1827,7 @@ contract('Crowdsale', function(accounts) {
     }).then(function() {
       assert.equal(true, catched, "not catched");
       catched = false;
+      // try to transfer - should fail
       return metaToken.transfer(accounts[8], 1, { from: accounts[9], gas: 180000 });
     }).catch(function(e) {
       if(e.toString().indexOf("invalid opcode") != -1) {
@@ -1837,9 +1838,20 @@ contract('Crowdsale', function(accounts) {
       }
     }).then(function() {
       assert.equal(true, catched, "not catched");
+      catched = false;
+      // finish minting try - try from not owner
+      return meta.finishMinting({ from: accounts[0], gas: 180000 })
+    }).catch(function(e) {
+      if(e.toString().indexOf("invalid opcode") != -1) {
+        catched = true;
+        return true;
+      } else {
+        throw e;
+      }
+    }).then(function() {
+      assert.equal(true, catched, "not catched when try to finish minting from not owner");
       // finish minting try - it should mint tokens, check balances
       return meta.finishMinting({ from: accounts[1], gas: 180000 })
-      // try to move tokens - moved
     }).then(function() {
       return metaToken.balanceOf(accounts[0]);
     }).then(function(balance) {
@@ -1882,7 +1894,7 @@ contract('Crowdsale', function(accounts) {
     }).then(function(balance) {
       var invested8FDC = new BigNumber(web3.toWei(investedPass4StageInEth, 'ether')).mul(new BigNumber(newPrice4));
       assert(balance.toString(), invested8FDC.toString(), "5 investor balance wrong!");
-      // check transfer balance after ICO
+      // check transfer balance after ICO - try to move tokens - moved
       return metaToken.transfer(accounts[7], transferredFDC, { from: accounts[8], gas: 180000 });
     }).then(function(balance) {
       return metaToken.balanceOf(accounts[4]);
