@@ -1657,21 +1657,23 @@ contract('Crowdsale', function(accounts) {
 
 
   it("ICO 1 - ICO started minute ago: should invest returns success", function() {
+    var etherMul = new BigNumber(1000000000000000000);
     var meta;
     var metaToken;
     var transferredFDC = 1;
+    var transferredFDCInWei = new BigNumber(web3.toWei(transferredFDC, 'ether'));;
     var catched = false;
     var startDate = Math.floor(Date.now()/1000) - 60;
     var investedInEth = 15;
-    var invested = parseInt(web3.toWei(investedInEth, 'ether'));
+    var investedInWei = new BigNumber(web3.toWei(investedInEth, 'ether'));
     var investedPass1StageInEth = 851;
-    var investedPass1Stage = parseInt(web3.toWei(investedPass1StageInEth, 'ether'));
+    var investedPass1StageInWei = new BigNumber(web3.toWei(investedPass1StageInEth, 'ether'));
     var investedPass2StageInEth = 2551;
-    var investedPass2Stage = parseInt(web3.toWei(investedPass2StageInEth, 'ether'));
+    var investedPass2StageInWei = new BigNumber(web3.toWei(investedPass2StageInEth, 'ether'));
     var investedPass3StageInEth = 8161;
-    var investedPass3Stage = parseInt(web3.toWei(investedPass3StageInEth, 'ether'));
+    var investedPass3StageInWei = new BigNumber(web3.toWei(investedPass3StageInEth, 'ether'));
     var investedPass4StageInEth = 49301;
-    var investedPass4Stage = parseInt(web3.toWei(investedPass4StageInEth, 'ether'));
+    var investedPass4StageInWei = new BigNumber(web3.toWei(investedPass4StageInEth, 'ether'));
 
     var investedAfter_1_2_3_in_Ether = investedInEth + investedPass1StageInEth + investedPass2StageInEth;
     var investedAfter_1_2_3_in_Wgei = new BigNumber(web3.toWei(investedAfter_1_2_3_in_Ether, 'ether'));
@@ -1683,13 +1685,20 @@ contract('Crowdsale', function(accounts) {
     var investedAfter_1_2_3_4_5_in_Wgei = new BigNumber(web3.toWei(investedAfter_1_2_3_4_5_in_Ether, 'ether'));
 
     var lastDate = startDate + (modelPeriod1 + modelPeriod2 + modelPeriod3 + modelPeriod4)*24*60*60;
-    var firstInvestorTokens = invested*newPrice1;
-    var investedPass1StageTokens = investedPass1Stage*newPrice1;
-    var investedPass2StageTokens = investedPass2Stage*newPrice2;
-    var lastDateAfterSecondInvestor = 0;
-    var lastDateAfterThridInvestor = 0;
-    var lastDateAfter4Investor = 0;
-    var lastDateAfter5Investor = 0;
+    var firstInvestorTokensFDC = investedInWei.dividedToIntegerBy(new BigNumber(newPrice1));
+    var firstInvestorTokensFDCInWei = firstInvestorTokensFDC.mul(etherMul);
+    var investedPass1StageTokensFDC = investedPass1StageInWei.dividedToIntegerBy(new BigNumber(newPrice1));
+    var investedPass1StageTokensFDCInWei = investedPass1StageTokensFDC.mul(etherMul);
+    var investedPass2StageTokensFDC = investedPass2StageInWei.dividedToIntegerBy(new BigNumber(newPrice2));
+    var investedPass2StageTokensFDCInWei = investedPass2StageTokensFDC.mul(etherMul);
+    var investedPass3StageTokensFDC = investedPass3StageInWei.dividedToIntegerBy(new BigNumber(newPrice3));
+    var investedPass3StageTokensFDCInWei = investedPass3StageTokensFDC.mul(etherMul);
+    var investedPass4StageTokensFDC = investedPass4StageInWei.dividedToIntegerBy(new BigNumber(newPrice4));
+    var investedPass4StageTokensFDCInWei = investedPass4StageTokensFDC.mul(etherMul);
+    var lastDateAfterSecondInvestor;
+    var lastDateAfterThridInvestor;
+    var lastDateAfter4Investor;
+    var lastDateAfter5Investor;
     var mBalanceMultisigFDC;
     var mBalanceFoundersFDC;
     var mBalanceBountyFDC;
@@ -1711,26 +1720,25 @@ contract('Crowdsale', function(accounts) {
       return meta.currentStage.call();
     }).then(function(stageIndex) {
       assert.equal(0, stageIndex, "current stage wrong");
-      return web3.eth.sendTransaction({ from: accounts[4], to: meta.address, value: invested, gas: 180000 })
+      return web3.eth.sendTransaction({ from: accounts[4], to: meta.address, value: investedInWei, gas: 180000 })
     }).then(function() {
       return meta.totalInvested.call();
     }).then(function(totalInvested) {
-      assert.equal(invested, totalInvested, "not invested");
+      assert.equal(investedInWei.toString(), totalInvested.toString(), "not invested");
       return metaToken.totalSupply.call();
     }).then(function(totalSupply) {
       var parsedInvested = web3.toWei(totalSupply, 'ether');
-      assert.equal(firstInvestorTokens, parsedInvested, "not mint right count of tokens");
+      assert.equal(firstInvestorTokensFDCInWei.toString(), totalSupply.toString(), "not mint right count of tokens");
     // test to pass first stage //
       lastDateAfterSecondInvestor = Math.floor(Date.now()/1000) + (modelPeriod2 + modelPeriod3 + modelPeriod4)*24*60*60;
-      return web3.eth.sendTransaction({ from: accounts[5], to: meta.address, value: investedPass1Stage, gas: 180000 })
+      return web3.eth.sendTransaction({ from: accounts[5], to: meta.address, value: investedPass1StageInWei, gas: 180000 })
     }).then(function() {
       return meta.totalInvested.call();
     }).then(function(totalInvested) {
-      assert.equal(invested + investedPass1Stage, totalInvested, "not invested pass stage 1");
+      assert.equal(investedInWei.add(investedPass1StageInWei).toString(), totalInvested.toString(), "not invested pass stage 1");
       return metaToken.totalSupply.call();
     }).then(function(totalSupply) {
-      var parsedInvested = web3.toWei(totalSupply, 'ether');
-      assert.equal(firstInvestorTokens + investedPass1StageTokens, parsedInvested, "not mint right count of tokens  pass stage 1");
+      assert.equal(firstInvestorTokensFDCInWei.add(investedPass1StageTokensFDCInWei).toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 1");
       return meta.currentStage.call();
     }).then(function(stageIndex) {
       assert.equal(1, stageIndex, "current stage wrong after second investor");
@@ -1743,18 +1751,14 @@ contract('Crowdsale', function(accounts) {
       assert.equal(lastDateAfterSecondInvestor, fixedDate, "invest last sale date after second investor");
     // test to pass second stage //
       lastDateAfterThridInvestor = Math.floor(Date.now()/1000) + (modelPeriod3 + modelPeriod4)*24*60*60;
-      return web3.eth.sendTransaction({ from: accounts[6], to: meta.address, value: investedPass2Stage, gas: 180000 })
+      return web3.eth.sendTransaction({ from: accounts[6], to: meta.address, value: investedPass2StageInWei, gas: 180000 })
     }).then(function() {
       return meta.totalInvested.call();
     }).then(function(totalInvested) {
       assert.equal(investedAfter_1_2_3_in_Wgei.toString(), totalInvested.toString(), "not invested pass stage 2");
       return metaToken.totalSupply.call();
     }).then(function(totalSupply) {
-      var investedLocal1 = new BigNumber(investedInEth).mul(newPrice1);
-      var investedLocal2 = new BigNumber(investedPass1StageInEth).mul(newPrice1);
-      var investedLocal3 = new BigNumber(investedPass2StageInEth).mul(newPrice2);
-      var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3);
-      assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 2");
+      assert.equal(firstInvestorTokensFDCInWei.add(investedPass1StageTokensFDCInWei).add(investedPass2StageTokensFDCInWei).toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 2");
       return meta.currentStage.call();
     }).then(function(stageIndex) {
       assert.equal(2, stageIndex, "current stage wrong after thrid investor");
@@ -1767,19 +1771,14 @@ contract('Crowdsale', function(accounts) {
       assert.equal(lastDateAfterThridInvestor, fixedDate, "invest last sale date after thrid investor");
     // test to pass 3 stage //
       lastDateAfter4Investor = Math.floor(Date.now()/1000) + (modelPeriod4)*24*60*60;
-      return web3.eth.sendTransaction({ from: accounts[7], to: meta.address, value: investedPass3Stage, gas: 180000 })
+      return web3.eth.sendTransaction({ from: accounts[7], to: meta.address, value: investedPass3StageInWei, gas: 180000 })
     }).then(function() {
       return meta.totalInvested.call();
     }).then(function(totalInvested) {
       assert.equal(investedAfter_1_2_3_4_in_Wgei.toString(), totalInvested.toString(), "not invested pass stage 3");
       return metaToken.totalSupply.call();
     }).then(function(totalSupply) {
-      var investedLocal1 = new BigNumber(investedInEth).mul(newPrice1);
-      var investedLocal2 = new BigNumber(investedPass1StageInEth).mul(newPrice1);
-      var investedLocal3 = new BigNumber(investedPass2StageInEth).mul(newPrice2);
-      var investedLocal4 = new BigNumber(investedPass3StageInEth).mul(newPrice3);
-      var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3).add(investedLocal4);
-      assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 3");
+      assert.equal(firstInvestorTokensFDCInWei.add(investedPass1StageTokensFDCInWei).add(investedPass2StageTokensFDCInWei).add(investedPass3StageTokensFDCInWei).toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 3");
       return meta.currentStage.call();
     }).then(function(stageIndex) {
       assert.equal(3, stageIndex, "current stage wrong after 4 investor");
@@ -1792,22 +1791,15 @@ contract('Crowdsale', function(accounts) {
       assert.equal(lastDateAfter4Investor, fixedDate, "invest last sale date after 4 investor");
     // test to pass 4 stage //
       lastDateAfter5Investor = Math.floor(Date.now()/1000);
-      return web3.eth.sendTransaction({ from: accounts[8], to: meta.address, value: investedPass4Stage, gas: 180000 })
+      return web3.eth.sendTransaction({ from: accounts[8], to: meta.address, value: investedPass4StageInWei, gas: 180000 })
     }).then(function() {
       return meta.totalInvested.call();
     }).then(function(totalInvested) {
       assert.equal(investedAfter_1_2_3_4_5_in_Wgei.toString(), totalInvested.toString(), "not invested pass stage 4");
       return metaToken.totalSupply.call();
     }).then(function(totalSupply) {
-      var investedLocal1 = new BigNumber(investedInEth).mul(newPrice1);
-      var investedLocal2 = new BigNumber(investedPass1StageInEth).mul(newPrice1);
-      var investedLocal3 = new BigNumber(investedPass2StageInEth).mul(newPrice2);
-      var investedLocal4 = new BigNumber(investedPass3StageInEth).mul(newPrice3);
-      var investedLocal5 = new BigNumber(investedPass4StageInEth).mul(newPrice4);
-      var investedLocal = investedLocal1.add(investedLocal2).add(investedLocal3).add(investedLocal4).add(investedLocal5);
-    //  console.log("Total minted tokens to investors " + totalSupply + " FDC.");
       mBalanceInvestorsFDC = totalSupply;
-      assert.equal(investedLocal.toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 4");
+      assert.equal(firstInvestorTokensFDCInWei.add(investedPass1StageTokensFDCInWei).add(investedPass2StageTokensFDCInWei).add(investedPass3StageTokensFDCInWei).add(investedPass4StageTokensFDCInWei).toString(), totalSupply.toString(), "not mint right count of tokens  pass stage 4");
       return meta.lastSaleDate.call();
     }).then(function(lastSaleDate) {
       var fixedDate = parseInt(lastSaleDate);
@@ -1816,7 +1808,7 @@ contract('Crowdsale', function(accounts) {
       }
       assert.equal(lastDateAfter5Investor, fixedDate, "invest last sale date after 5 investor");
     // try to invest - should fail
-      return web3.eth.sendTransaction({ from: accounts[9], to: meta.address, value: investedPass4Stage, gas: 180000 })
+      return web3.eth.sendTransaction({ from: accounts[9], to: meta.address, value: investedPass4StageInWei, gas: 180000 })
     }).catch(function(e) {
       if(e.toString().indexOf("invalid opcode") != -1) {
         catched = true;
@@ -1828,7 +1820,7 @@ contract('Crowdsale', function(accounts) {
       assert.equal(true, catched, "not catched");
       catched = false;
       // try to transfer - should fail
-      return metaToken.transfer(accounts[8], 1, { from: accounts[9], gas: 180000 });
+      return metaToken.transfer(accounts[8], transferredFDCInWei, { from: accounts[9], gas: 180000 });
     }).catch(function(e) {
       if(e.toString().indexOf("invalid opcode") != -1) {
         catched = true;
@@ -1856,67 +1848,53 @@ contract('Crowdsale', function(accounts) {
       return metaToken.balanceOf(accounts[0]);
     }).then(function(balance) {
       mBalanceMultisigFDC = balance;
-      //console.log("Multisig wallet balance " + balance + " FDC.");
       return metaToken.balanceOf(accounts[2]);
     }).then(function(balance) {
       mBalanceFoundersFDC = balance;
-      //console.log("Founders wallet balance " + balance.dividedToIntegerBy(1000) + " FDC.");
       return metaToken.balanceOf(accounts[3]);
     }).then(function(balance) {
       mBalanceBountyFDC = balance;
-      //console.log("Bounty wallet balance " + balance.dividedToIntegerBy(1000) + " FDC.");
       mSummaryMintedFDCAfterICO = mBalanceMultisigFDC.add(mBalanceInvestorsFDC).add(mBalanceFoundersFDC).add(mBalanceBountyFDC);
-      //console.log("Summary minted " + mSummaryMintedFDCAfterICO + " FDC.");
       mBountyPercentTokens = mSummaryMintedFDCAfterICO.div(new BigNumber(1000)).mul(new BigNumber(5));
       mFoundersPercentTokens = mSummaryMintedFDCAfterICO.div(new BigNumber(1000)).mul(new BigNumber(45));
-      //console.log("Bounty calculated balance " + mBountyPercentTokens.dividedToIntegerBy(1000) + " FDC.");
-      //console.log("Founders calculated balance " + mFoundersPercentTokens.dividedToIntegerBy(1000) + " FDC.");
-      assert(mBalanceFoundersFDC.dividedToIntegerBy(1000).toString(), mFoundersPercentTokens.dividedToIntegerBy(1000).toString(), "Fouders tokens wront count");
-      assert(mBalanceBountyFDC.dividedToIntegerBy(1000).toString(), mBountyPercentTokens.dividedToIntegerBy(1000).toString(), "Bounty tokens wront count");
+      assert.equal(mBalanceFoundersFDC.dividedToIntegerBy(1000).toString(), mFoundersPercentTokens.dividedToIntegerBy(1000).toString(), "Fouders tokens wront count");
+      assert.equal(mBalanceBountyFDC.dividedToIntegerBy(1000).toString(), mBountyPercentTokens.dividedToIntegerBy(1000).toString(), "Bounty tokens wront count");
       // check balances for 4,5,6,7,8
       return metaToken.balanceOf(accounts[4]);
     }).then(function(balance) {
-      var invested4FDC = new BigNumber(web3.toWei(investedInEth, 'ether')).mul(new BigNumber(newPrice1));
-      assert(balance.toString(), invested4FDC.toString(), "1 investor balance wrong!");
+      assert.equal(firstInvestorTokensFDCInWei.toString(), balance.toString(), "1 investor balance wrong!");
       return metaToken.balanceOf(accounts[5]);
     }).then(function(balance) {
-      var invested5FDC = new BigNumber(web3.toWei(investedPass1StageInEth, 'ether')).mul(new BigNumber(newPrice1));
-      assert(balance.toString(), invested5FDC.toString(), "2 investor balance wrong!");
+      assert.equal(investedPass1StageTokensFDCInWei.toString(), balance.toString(), "2 investor balance wrong!");
       return metaToken.balanceOf(accounts[6]);
     }).then(function(balance) {
-      var invested6FDC = new BigNumber(web3.toWei(investedPass2StageInEth, 'ether')).mul(new BigNumber(newPrice2));
-      assert(balance.toString(), invested6FDC.toString(), "3 investor balance wrong!");
+      assert.equal(investedPass2StageTokensFDCInWei, balance.toString(), "3 investor balance wrong!");
       return metaToken.balanceOf(accounts[7]);
     }).then(function(balance) {
-      var invested7FDC = new BigNumber(web3.toWei(investedPass3StageInEth, 'ether')).mul(new BigNumber(newPrice3));
-      assert(balance.toString(), invested7FDC.toString(), "4 investor balance wrong!");
+      assert.equal(investedPass3StageTokensFDCInWei, balance.toString(), "4 investor balance wrong!");
       return metaToken.balanceOf(accounts[8]);
     }).then(function(balance) {
-      var invested8FDC = new BigNumber(web3.toWei(investedPass4StageInEth, 'ether')).mul(new BigNumber(newPrice4));
-      assert(balance.toString(), invested8FDC.toString(), "5 investor balance wrong!");
+      assert.equal(investedPass4StageTokensFDCInWei, balance.toString(), "5 investor balance wrong!");
       // check transfer balance after ICO - try to move tokens - moved
-      return metaToken.transfer(accounts[7], transferredFDC, { from: accounts[8], gas: 180000 });
+      return metaToken.transfer(accounts[7], transferredFDCInWei, { from: accounts[8], gas: 180000 });
     }).then(function(balance) {
       return metaToken.balanceOf(accounts[4]);
     }).then(function(balance) {
-      var invested4FDC = new BigNumber(web3.toWei(investedInEth, 'ether')).mul(new BigNumber(newPrice1));
-      assert(balance.toString(), invested4FDC.toString(), "after transfer: 1 investor balance wrong!");
+      assert.equal(firstInvestorTokensFDCInWei.toString(), balance.toString(), "after transfer: 1 investor balance wrong!");
       return metaToken.balanceOf(accounts[5]);
     }).then(function(balance) {
-      var invested5FDC = new BigNumber(web3.toWei(investedPass1StageInEth, 'ether')).mul(new BigNumber(newPrice1));
-      assert(balance.toString(), invested5FDC.toString(), "after transfer: 2 investor balance wrong!");
+      assert.equal(investedPass1StageTokensFDCInWei.toString(), balance.toString(), "after transfer: 2 investor balance wrong!");
       return metaToken.balanceOf(accounts[6]);
     }).then(function(balance) {
-      var invested6FDC = new BigNumber(web3.toWei(investedPass2StageInEth, 'ether')).mul(new BigNumber(newPrice2));
-      assert(balance.toString(), invested6FDC.toString(), "after transfer: 3 investor balance wrong!");
+      assert.equal(investedPass2StageTokensFDCInWei.toString(), balance.toString(), "after transfer: 3 investor balance wrong!");
       return metaToken.balanceOf(accounts[7]);
     }).then(function(balance) {
-      var invested7FDC = new BigNumber(web3.toWei(investedPass3StageInEth + transferredFDC, 'ether')).mul(new BigNumber(newPrice3));
-      assert(balance.toString(), invested7FDC.toString(), "after transfer: 4 investor balance wrong!");
+      var invested7FDC = investedPass3StageTokensFDCInWei.add(transferredFDCInWei);
+      assert.equal(balance.toString(), invested7FDC.toString(), "after transfer: 4 investor balance wrong!");
       return metaToken.balanceOf(accounts[8]);
     }).then(function(balance) {
-      var invested8FDC = new BigNumber(web3.toWei(investedPass4StageInEth - transferredFDC, 'ether')).mul(new BigNumber(newPrice4));
-      assert(balance.toString(), invested8FDC.toString(), "after transfer: 5 investor balance wrong!");
+      var invested8FDC = investedPass4StageTokensFDCInWei.sub(transferredFDCInWei)
+      assert.equal(balance.toString(), invested8FDC.toString(), "after transfer: 5 investor balance wrong!");
     });
 
   });
