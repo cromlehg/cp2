@@ -435,7 +435,7 @@ contract StagedCrowdsale is Ownable {
         previousDate = stages[i].closed;
       }
     }
-    return 1;
+    return 0;
   }
 
   function updateStageWithInvested() internal {
@@ -503,6 +503,7 @@ contract Crowdsale is StagedCrowdsale, Pausable {
   }
 
   function createTokens() whenNotPaused isUnderHardCap saleIsOn payable {
+    require(msg.value > 0);
     uint stageIndex = currentStage();
     Stage storage stage = stages[stageIndex];
     multisigWallet.transfer(msg.value);
