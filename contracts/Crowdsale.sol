@@ -500,6 +500,7 @@ contract Crowdsale is StagedCrowdsale, Pausable {
     token.mint(bountyTokensWallet, bountyTokens);
     token.finishMinting();
     token.allowTransfer();
+    token.transferOwnership(owner);
   }
 
   function createTokens() whenNotPaused isUnderHardCap saleIsOn payable {
@@ -515,6 +516,11 @@ contract Crowdsale is StagedCrowdsale, Pausable {
 
   function() external payable {
     createTokens();
+  }
+
+  function retrieveTokens(address anotherToken) public onlyOwner {
+    ERC20 alienToken = ERC20(anotherToken);
+    alienToken.transfer(multisigWallet, token.balanceOf(this));
   }
 
 }
