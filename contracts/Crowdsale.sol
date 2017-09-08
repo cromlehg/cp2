@@ -278,9 +278,9 @@ contract Pausable is Ownable {
 
 contract FidcomToken is MintableToken {
     
-  string public constant name = "Fidcom";
+  string public constant name = "Fidcom Test";
    
-  string public constant symbol = "FDC";
+  string public constant symbol = "FIDCT";
     
   uint32 public constant decimals = 18;
 
