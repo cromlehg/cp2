@@ -494,8 +494,8 @@ contract Crowdsale is StagedCrowdsale, Pausable {
     uint summaryTokensPercent = bountyPercent + foundersPercent;
     uint summaryFoundersTokens = issuedTokenSupply.mul(summaryTokensPercent).div(percentRate - summaryTokensPercent);
     uint totalSupply = summaryFoundersTokens + issuedTokenSupply;
-    uint foundersTokens = totalSupply.div(percentRate).mul(foundersPercent);
-    uint bountyTokens = totalSupply.div(percentRate).mul(bountyPercent);
+    uint foundersTokens = totalSupply.mul(foundersPercent).div(percentRate);
+    uint bountyTokens = totalSupply.mul(bountyPercent).div(percentRate);
     token.mint(foundersTokensWallet, foundersTokens);
     token.mint(bountyTokensWallet, bountyTokens);
     token.finishMinting();
@@ -509,7 +509,7 @@ contract Crowdsale is StagedCrowdsale, Pausable {
     Stage storage stage = stages[stageIndex];
     multisigWallet.transfer(msg.value);
     uint price = stage.price;
-    uint tokens = msg.value.div(price).mul(1 ether);
+    uint tokens = msg.value.mul(1 ether).div(price);
     updateStageWithInvested();
     token.mint(msg.sender, tokens);
   }
