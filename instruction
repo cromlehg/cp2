@@ -85,3 +85,17 @@ WORK NOTES
 
 Начало ICO: 19 сентября в 16-00 по Москве
 
+Настройка контракта:
+setStart(1505826000)
+setFoundersPercent(45)
+setBountyPercent(5)
+addStage(10,   850000000000000000000, 1700000000000000)
+addStage(10,  2550000000000000000000, 2550000000000000)
+addStage(10,  8160000000000000000000, 2720000000000000)
+addStage(30, 49300000000000000000000, 3400000000000000)
+
+
+Адрес конракта распродажи: 0xd830955B58a9e55Aa1d92c799098909AB9f531a5
+    ссылка: https://etherscan.io/address/0xd830955b58a9e55aa1d92c799098909ab9f531a5#readContract
+Адрес контракта токена   : 0x7a2ea17b835CfD9272cEc08eE0d40a5719557843
+    ссылка: https://etherscan.io/token/0x7a2ea17b835cfd9272cec08ee0d40a5719557843#readContract  
