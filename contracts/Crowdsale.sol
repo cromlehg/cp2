@@ -280,7 +280,7 @@ contract FidcomToken is MintableToken {
     
   string public constant name = "Fidcom";
    
-  string public constant symbol = "FDC";
+  string public constant symbol = "FIDC";
     
   uint32 public constant decimals = 18;
 
